@@ -9,7 +9,7 @@ asttokens                 2.0.5              pyhd3eb1b0_0
 async-lru                 2.0.4           py310hecd8cb5_0  
 attrs                     24.2.0          py310hecd8cb5_0  
 babel                     2.11.0          py310hecd8cb5_0  
-batman                    0.7.0                    pypi_0    pypi
+batman-package            2.4.9                    pypi_0    pypi
 beautifulsoup4            4.12.3          py310hecd8cb5_0  
 bleach                    4.1.0              pyhd3eb1b0_0  
 brotli-python             1.0.9           py310hcec6c5f_8  
