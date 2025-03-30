@@ -9,7 +9,7 @@ import yaml  # Import the YAML module for loading parameter files
 from batman import TransitParams
 
 # Define the daneel.transit method
-def daneel_transit(parameter_file):
+def transit(parameter_file):
     ## Read parameters from YAML file
     with open(parameter_file, 'r') as file:
         params_dict = yaml.safe_load(file)
@@ -58,22 +58,3 @@ def daneel_transit(parameter_file):
 
     # Show the plot
     plt.show()
-
-# Main function to handle command-line arguments
-def main():
-    parser = argparse.ArgumentParser(description="Exoplanet Transit Model")
-    
-    # Add arguments for input YAML file and the --transit flag
-    parser.add_argument('-i', '--input', type=str, required=True, help="Path to the parameters YAML file")
-    parser.add_argument('-t', '--transit', action='store_true', help="Run the transit calculation")
-
-    # Parse the command-line arguments
-    args = parser.parse_args()
-
-    # If -t or --transit flag is passed, call the daneel_transit method with input file
-    if args.transit:
-        daneel_transit(args.input)
-
-# If this script is run directly, execute the main function
-if __name__ == "__main__":
-    main()
