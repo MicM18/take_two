@@ -1,4 +1,13 @@
+#!/usr/bin/env python3
+
 import argparse
+import sys
+import os
+
+# Define the correct path to the original directory (to find the other files)
+script_dir = "/Users/micolemiceli/Desktop/Computational_Astrophyics/take_two/src/daneel/detection"
+sys.path.insert(0, script_dir)  # Add it to Python’s search path
+
 from transit import transit
 
 def main():
