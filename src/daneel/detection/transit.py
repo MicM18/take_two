@@ -1,72 +1,78 @@
-## Import modules 
 import batman
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd 
-from batman import TransitParams
-
+import pandas as pd
 import os
 import argparse
+import yaml  # Import the YAML module for loading parameter files
+
+from batman import TransitParams
 
 # Define the daneel.transit method
-def daneel_transit():
-    ## Parameters for exoplanet WASP-39b 
-    params = batman.TransitParams()       # object to store transit parameters
-    params.t0 = 0.                        # time of inferior conjunction
-    params.per = 4.055259                 # orbital period
-    params.rp = 0.1143                    # planet radius (in units of stellar radii)
-    params.a = 11.65                      # semi-major axis (in units of stellar radii)
-    params.inc = 87.83                    # orbital inclination (in degrees)
-    params.ecc = 0.                       # eccentricity
-    params.w = 90.                        # longitude of periastron (in degrees)
+def daneel_transit(parameter_file):
+    ## Read parameters from YAML file
+    with open(parameter_file, 'r') as file:
+        params_dict = yaml.safe_load(file)
+    
+    # Initialize the parameters from the YAML file
+    params = batman.TransitParams() 
+    params.t0 = params_dict['t0']  # time of inferior conjunction
+    params.per = params_dict['per']  # orbital period
+    params.rp = params_dict['rp']  # planet radius
+    params.a = params_dict['a']  # semi-major axis
+    params.inc = params_dict['inc']  # orbital inclination
+    params.ecc = params_dict['ecc']  # eccentricity
+    params.w = params_dict['w']  # longitude of periastron
 
-  # Calculate limb darkening coefficients from: https://exoctk.stsci.edu/limb_darkening
-  # Using Kepler bandpass
+    # Check if the limb darkening file exists
+    ld_file = "ExoCTK_results.txt"
+    if not os.path.exists(ld_file):
+        raise FileNotFoundError(f"The limb darkening coefficients file {ld_file} was not found. Please ensure the file is in the correct location.")
 
-  # Read the downloaded limb darkening coefficients table
-  data = pd.read_csv("ExoCTK_results.txt", header=[0], delim_whitespace=True, skiprows=[1], skipfooter=30, engine='python')
-  # We define the coefficients u1 and u2 as the mean of
-  # coefficients c1 and c2, respectively, computed from the table.
-  u1, u2 = data["c1"].mean(), data["c2"].mean()
+    # Read the downloaded limb darkening coefficients table
+    data = pd.read_csv(ld_file, header=[0], delim_whitespace=True, skiprows=[1], skipfooter=30, engine='python')
 
-  params.u = [u1, u2]                #limb darkening coefficients [u1, u2]
-  params.limb_dark = "quadratic"     #limb darkening model
+    # We define the coefficients u1 and u2 as the mean of coefficients c1 and c2, respectively, computed from the table.
+    u1, u2 = data["c1"].mean(), data["c2"].mean()
 
-  t = np.linspace(-0.025, 0.025, 1000)  #times at which to calculate light curve
+    params.u = [u1, u2]  # limb darkening coefficients
+    params.limb_dark = "quadratic"  # limb darkening model
 
-  ## Initialise model 
-  m = batman.TransitModel(params, t) 
+    t = np.linspace(-0.025, 0.025, 1000)  # times at which to calculate light curve
 
-  ## Calculate the light curve 
-  flux = m.light_curve(params)  
+    ## Initialise model 
+    m = batman.TransitModel(params, t) 
 
-  ## Plotting the calculated light curve
+    ## Calculate the light curve 
+    flux = m.light_curve(params)  
 
-  plt.figure(figsize=(8,8))
-  plt.plot(t, flux, linewidth=3)
-  plt.title("Transit light curve of WASP-39b", fontsize=18)
-  plt.xlabel("Time [days]", fontsize=15)
-  plt.ylabel("Relative flux", fontsize=15)
+    ## Plotting the calculated light curve
+    plt.figure(figsize=(8,8))
+    plt.plot(t, flux, linewidth=3)
+    plt.title(f"Transit light curve of {params_dict['planet_name']}", fontsize=18)
+    plt.xlabel("Time [days]", fontsize=15)
+    plt.ylabel("Relative flux", fontsize=15)
 
-  # Save the plot as a PNG file
-  plt.savefig("WASP_39b_assignment1_taskF.png", dpi=300)  # Adjust dpi for resolution
+    # Save the plot as a PNG file
+    plt.savefig(f"{params_dict['planet_name']}_light_curve.png", dpi=300)  # Save with planet name
 
-  # Show the plot
-  plt.show()
+    # Show the plot
+    plt.show()
 
 # Main function to handle command-line arguments
 def main():
     parser = argparse.ArgumentParser(description="Exoplanet Transit Model")
     
-    # Add the --transit argument to trigger the transit calculation
+    # Add arguments for input YAML file and the --transit flag
+    parser.add_argument('-i', '--input', type=str, required=True, help="Path to the parameters YAML file")
     parser.add_argument('-t', '--transit', action='store_true', help="Run the transit calculation")
-    
+
     # Parse the command-line arguments
     args = parser.parse_args()
 
-    # If -t or --transit flag is passed, call the daneel_transit method
+    # If -t or --transit flag is passed, call the daneel_transit method with input file
     if args.transit:
-        daneel_transit()
+        daneel_transit(args.input)
 
 # If this script is run directly, execute the main function
 if __name__ == "__main__":
